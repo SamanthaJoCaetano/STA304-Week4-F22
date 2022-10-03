@@ -1,0 +1,137 @@
+---
+title: "Linear & Logistic Regression - Answers"
+author: "Samantha-Jo Caetano"
+date: "October 4, 2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In your breakout groups work through the following R code:
+
+```{r}
+library(tidyverse)
+```
+
+
+# Loading in Data
+
+
+The `dpylr` package has some data about Star Wars characters. Let's assume it is a representative sample of all characters seen in Episodes 1 to 9.
+
+
+```{r, message=FALSE}
+
+starwars<-starwars
+
+glimpse(starwars)
+
+head(starwars)
+
+```
+
+
+### Task 1: Create a Simple Linear Model to predict mass
+
+Use the `svyglm()` function in the `survey` library to run a linear regression estimation of mass given height. Assume it was a Simple Random Sample and use the finite population correction with $N=200$.
+
+```{r}
+#install.packages("survey")
+library(survey)
+
+## Using the Survey Library
+n=87
+N=200
+fpc.srs = rep(N, n)
+
+starwars.design <- svydesign(id=~1, data=starwars, fpc=fpc.srs)
+
+mysvylm <- svyglm(mass ~ height, starwars.design)
+summary(mysvylm)
+```
+
+What is the standard error of the intercept?
+
+a. -13.81
+**b. 17.36**
+c. 0.64
+d. 0.06
+
+
+### Task 2: Create a Linear Model to predict mass
+
+Use the `lm()` function in the `survey` library to run a linear regression estimation of mass given height.
+
+```{r}
+#install.packages("survey")
+library(survey)
+
+## Using the Survey Library
+summary(lm(mass ~ height, data=starwars))
+
+```
+
+What is the different between the output here and the outcome in Task 1? What is similar?
+
+**Standard errors are different, but estimates are the same.**
+
+What happens if you change the $N$ in Task 1? Try setting $N=87, 200, 1000, 10000$
+
+
+### Task 3: Create a Linear Model to predict mass
+
+Run a linear regression estimation of mass given height and sex.
+
+```{r}
+## Using the Survey Library
+n=87
+N=200
+fpc.srs = rep(N, n)
+
+starwars.design <- svydesign(id=~1, data=starwars, fpc=fpc.srs)
+
+mysvylm <- svyglm(mass ~ height + sex, starwars.design)
+summary(mysvylm)
+
+## Using lm
+summary(lm(mass ~ height + sex, data=starwars))
+
+```
+
+### Task 4: Create a Logistic Regression Model to predict if mass exceeds 100lb.
+
+Run a logistic regression model mass being over 100lbs given height and sex. 
+
+```{r}
+## Using the Survey Library
+
+## Remove missing mass
+
+starwars <- starwars %>% filter(!is.na(mass))
+
+## Create a new variable called `mass_over100`. 
+
+starwars <- starwars %>%  mutate(
+  mass_over100 = case_when(
+    mass > 100 ~ 1, ## 1 = Yes, over 100lbs
+    mass <= 100 ~ 0)
+)
+
+
+## Using lm
+summary(glm(mass_over100 ~ height + sex, data=starwars, family = "binomial"))
+
+```
+
+
+Based off the above output, what is the predicted probability of a male who is 170cm tall being over 100lbs?
+
+**Answer: 0.05729392**
+
+```{r}
+pred_odds <- -28.90236+0.0604*170+15.8338*1
+exp(pred_odds)/(1+exp(pred_odds))
+```
+
