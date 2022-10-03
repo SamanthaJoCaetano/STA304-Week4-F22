@@ -33,7 +33,27 @@ head(starwars)
 
 ```
 
-Let's start by playing around with some SRS ratio estimation. Use the `svyglm()` function in the `survey` library to run a ratio estimation of mass given height. Assume it was a Simple Random Sample and use the finite population correction with $N=200$ and assuming 25% of the population are "feminine" and 75% are masculine.
+Let's start by playing around with some SRS ratio estimation. Use the `svyglm()` function in the `survey` library to run a ratio estimation of mass given height. Assume it was a Simple Random Sample and use the finite population correction with $N=200$.
+
+```{r}
+#install.packages("survey")
+library(survey)
+## Using the Survey Library
+N=200
+n=nrow(starwars)
+
+my.design <- svydesign(id=~1,
+                       data=starwars,
+                       fpc=rep(N, n))
+  
+svyratio(~mass, ~height, design=my.design)
+
+svyratio(~mass, ~height, design=my.design, na.rm=TRUE)
+
+```
+
+
+Let's try taking this a step further playing around with some Stratified random sampling ratio estimation. Use the `svyglm()` function in the `survey` library to run a ratio estimation of mass given height. Assume the study wished to stratify by gender, use the finite population correction with $N=200$ and assuming 20% of the population are "feminine" and 80% are masculine.
 
 ```{r}
 #install.packages("survey")
@@ -48,12 +68,12 @@ n_fem=nrow(starwars %>% filter(gender=="feminine"))
 ## Need to create a weight variable for 25% fem and 75% masculine and then a second variable that spreads the weight amongst the sample.
 
 starwars <- starwars %>% 
-  mutate(pop_strata_weight = case_when(gender=="feminine" ~ 25,
-                                   gender=="masculine" ~ 75))
+  mutate(pop_strata_weight = case_when(gender=="feminine" ~ 20,
+                                   gender=="masculine" ~ 80))
 
 starwars <- starwars %>% 
-  mutate(samp_strata_weight = case_when(gender=="feminine" ~ 25/17,
-                                   gender=="masculine" ~ 75/66))
+  mutate(samp_strata_weight = case_when(gender=="feminine" ~ 20/17,
+                                   gender=="masculine" ~ 80/66))
 
 starwars <- starwars %>% filter(!is.na(gender))
 
@@ -67,12 +87,7 @@ svyratio(~mass, ~height, design=strata.design)
 
 svyratio(~mass, ~height, design=strata.design, na.rm=TRUE)
 
-### Recall SRS code (if you want to compare results)
-svyratio(~mass, ~height, design=my.design, na.rm=TRUE)
-
 ```
-
-Let's try this again, but now assuming we are using a stratified random sample, ratio estimation. Use the `svyglm()` function in the `survey` library to run a ratio estimation of mass given height, while stratifying by gender. Assume it was a Stratified Random Sample and use the finite population correction with $N=200$.
 
 
 
