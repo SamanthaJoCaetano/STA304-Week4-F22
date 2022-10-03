@@ -9,7 +9,8 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-In your breakout groups work through the following R code:
+
+Let's work through the following R code:
 
 ```{r}
 library(tidyverse)
@@ -32,6 +33,30 @@ head(starwars)
 
 ```
 
+Let's start by playing around with some SRS ratio estimation. Use the `svyglm()` function in the `survey` library to run a ratio estimation of mass given height. Assume it was a Simple Random Sample and use the finite population correction with $N=200$.
+
+```{r}
+#install.packages("survey")
+library(survey)
+## Using the Survey Library
+N=200
+n=nrow(starwars)
+#fpc.srs = rep(N, n)
+
+strata.design <- svydesign(id=~1,
+                       strata=~gender,
+                       data=starwars,
+                       weight=~weighta, ### needs to be programmed into data.
+                       fpc=~tothosp)
+  
+svyratio(~mass, ~height, design=strata.design)
+
+svyratio(~mass, ~height, design=my.design, na.rm=TRUE)
+```
+
+Let's try this again, but now assuming we are using a stratified random sample, ratio estimation. Use the `svyglm()` function in the `survey` library to run a ratio estimation of mass given height, while stratifying by gender. Assume it was a Stratified Random Sample and use the finite population correction with $N=200$.
+
+
 
 ### Task 1: Create a Simple Linear Model to predict mass
 
@@ -39,7 +64,7 @@ Use the `svyglm()` function in the `survey` library to run a linear regression e
 
 ```{r}
 #install.packages("survey")
-library(survey)
+#library(survey)
 
 ## Using the Survey Library
 n=87
@@ -133,5 +158,39 @@ Based off the above output, what is the predicted probability of a male who is 1
 ```{r}
 pred_odds <- -28.90236+0.0604*170+15.8338*1
 exp(pred_odds)/(1+exp(pred_odds))
+```
+
+
+\newpage 
+
+# Logistic Regression SRS code
+
+```{r}
+mydata <- read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv")
+
+## Standard Logistic Regression
+mylogit<-glm(admit ~ gre + gpa +
+               as.factor(rank), data=mydata, family="binomial")
+summary(mylogit)
+
+## log(p/(1-p)) = -3.99 + 0.002*gre + 0.804*gpa-0.675*x3
+##                           -1.34*x4 - 1.55*x5
+
+
+## Survey Estimation for Logistic Regression
+n=length(mydata$admit)
+N=6000
+
+#install.packages("survey")
+library(survey)
+## Using the Survey Library
+fpc.srs = rep(N, n)
+
+ucla.design <- svydesign(id=~1, data=mydata, fpc=fpc.srs)
+
+mysvyglm <- svyglm(admit ~ gre + gpa + as.factor(rank), 
+                   ucla.design, family="binomial")
+summary(mysvyglm)
+
 ```
 
