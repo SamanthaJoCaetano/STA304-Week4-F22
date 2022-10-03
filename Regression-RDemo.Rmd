@@ -60,42 +60,33 @@ Let's try taking this a step further playing around with some Stratified random 
 #library(survey)
 ## Using the Survey Library
 N=200
-n_masc=nrow(starwars %>% filter(gender=="masculine"))
-n_fem=nrow(starwars %>% filter(gender=="feminine"))
 
-# In the sample there are 17 feminine characters and 66 masculine characters.
-
-## Need to create a weight variable for 25% fem and 75% masculine and then a second variable that spreads the weight amongst the sample.
-
-starwars <- starwars %>% 
-  mutate(pop_strata_weight = case_when(gender=="feminine" ~ 20,
-                                   gender=="masculine" ~ 80))
-
-starwars <- starwars %>% 
-  mutate(samp_strata_weight = case_when(gender=="feminine" ~ 20/17,
-                                   gender=="masculine" ~ 80/66))
-
-starwars_noNA <- starwars %>% filter(!is.na(gender))
-
-strata.design <- svydesign(id=~1,
-                       strata=~gender,
-                       weights = ~samp_strata_weight, 
-                       data=starwars_noNA,
-                       fpc=~pop_strata_weight)
-  
-svyratio(~mass, ~height, design=strata.design)
-
-svyratio(~mass, ~height, design=strata.design, na.rm=TRUE)
+# Let's find out the number of characters of each gender category in the sample.
 
 
-### If you wish to compare with SRS example
-# svyratio(~mass, ~height, design=my.design, na.rm=TRUE)
+# Now we need to create a weight variable for 20% fem and 80% masculine and then a second variable that spreads the weight amongst the sample.
+
+
+# Since we are setting the design to be based on gender, we will remove any missing genders.
+
+
+# Uncomment out the code, and fill in the weights and fpc variables based on your previous few lines of code. 
+
+#strata.design <- svydesign(id=~1,
+#                       strata=~gender,
+#                       weights = ~samp_strata_weight, 
+#                       data=starwars_noNA,
+#                       fpc=~pop_strata_weight)
+
+
+# Now let's see the reuslts:  
+# svyratio(~mass, ~height, design=strata.design, na.rm=TRUE)
 
 ```
 
 
 
-### Task 1: Create a Simple Linear Model to predict mass
+### Task 1 (5min): Create a Simple Linear Model to predict mass
 
 Use the `svyglm()` function in the `survey` library to run a linear regression estimation of mass given height. Assume it was a Simple Random Sample and use the finite population correction with $N=200$.
 
@@ -103,26 +94,19 @@ Use the `svyglm()` function in the `survey` library to run a linear regression e
 #install.packages("survey")
 #library(survey)
 
-## Using the Survey Library
-n=87
-N=200
-fpc.srs = rep(N, n)
 
-starwars.design <- svydesign(id=~1, data=starwars, fpc=fpc.srs)
-
-mysvylm <- svyglm(mass ~ height, starwars.design)
-summary(mysvylm)
 ```
 
 What is the standard error of the intercept?
 
 a. -13.81
-**b. 17.36**
+b. 17.36
 c. 0.64
 d. 0.06
 
+Go to [pollev.com/sta](pollev.com/sta) to put in your answer.
 
-### Task 2: Create a Linear Model to predict mass
+### Task 2 (4min): Create a Linear Model to predict mass
 
 Use the `lm()` function in the `survey` library to run a linear regression estimation of mass given height.
 
@@ -137,12 +121,13 @@ summary(lm(mass ~ height, data=starwars))
 
 What is the different between the output here and the outcome in Task 1? What is similar?
 
-**Standard errors are different, but estimates are the same.**
-
-What happens if you change the $N$ in Task 1? Try setting $N=87, 200, 1000, 10000$
+Go to [pollev.com/sta](pollev.com/sta) to put in your answer.
 
 
-### Task 3: Create a Linear Model to predict mass
+(Try on your own) What happens if you change the $N$ in Task 1? Try setting $N=87, 200, 1000, 10000$
+
+
+### Task 3 (3min): Create a Linear Model to predict mass
 
 Run a linear regression estimation of mass given height and sex.
 
@@ -158,21 +143,16 @@ mysvylm <- svyglm(mass ~ height + sex, starwars.design)
 summary(mysvylm)
 
 ## Using lm
-mymodel<-lm(mass ~ height + sex, data=starwars)
-summary(mymodel)
+summary(lm(mass ~ height + sex, data=starwars))
 
 ```
 
 Based on the output, what is the estimated mass of a male character who is 175 units tall?
 
-```{r}
--52.85109 + 0.63508*175+20.84051
-predict(mysvylm, tibble(height=175, sex="male"))
-predict(mymodel, tibble(height=175, sex="male"))
-```
+Go to [pollev.com/sta](pollev.com/sta) to put in your answer.
 
 
-### Task 4: Create a Logistic Regression Model to predict if mass exceeds 100lb.
+### Task 4 (5min): Create a Logistic Regression Model to predict if mass exceeds 100lb.
 
 Run a logistic regression model mass being over 100lbs given height and sex. 
 
@@ -181,38 +161,20 @@ Run a logistic regression model mass being over 100lbs given height and sex.
 
 ## Remove missing mass
 
-starwars <- starwars %>% filter(!is.na(mass))
 
 ## Create a new variable called `mass_over100`. 
 
-starwars <- starwars %>%  mutate(
-  mass_over100 = case_when(
-    mass > 100 ~ 1, ## 1 = Yes, over 100lbs
-    mass <= 100 ~ 0)
-)
 
 
-## Using lm
-my_glm <- glm(mass_over100 ~ height + sex, data=starwars, family = "binomial")
-summary(my_glm)
+## Create model using glm
+
 
 ```
 
 
 Based off the above output, what is the predicted probability of a male who is 170cm tall being over 100lbs?
 
-**Answer: 0.05729392**
-
-```{r}
-pred_odds <- -28.90236+0.0604*170+15.8338*1
-exp(pred_odds)/(1+exp(pred_odds))
-
-pred_odds2 <- predict(my_glm, tibble(sex="male", height=170))
-exp(pred_odds2)/(1+exp(pred_odds2))
-
-pred_prob <- predict(my_glm, tibble(sex="male", height=170), type = "response")
-pred_prob
-```
+Go to [pollev.com/sta](pollev.com/sta) to put in your answer.
 
 
 \newpage 
