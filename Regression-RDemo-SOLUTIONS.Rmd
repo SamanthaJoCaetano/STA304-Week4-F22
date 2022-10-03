@@ -163,7 +163,7 @@ exp(pred_odds)/(1+exp(pred_odds))
 
 \newpage 
 
-# Logistic Regression SRS code
+# Logistic Regression UCLA analysis of SRS with population of N=6000 code
 
 ```{r}
 mydata <- read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv")
