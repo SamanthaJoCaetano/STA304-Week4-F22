@@ -68,12 +68,12 @@ n_fem=nrow(starwars %>% filter(gender=="feminine"))
 ## Need to create a weight variable for 25% fem and 75% masculine and then a second variable that spreads the weight amongst the sample.
 
 starwars <- starwars %>% 
-  mutate(pop_strata_weight = case_when(gender=="feminine" ~ 20,
-                                   gender=="masculine" ~ 80))
+  mutate(pop_strata_weight = case_when(gender=="feminine" ~ 40,
+                                   gender=="masculine" ~ 160))
 
 starwars <- starwars %>% 
-  mutate(samp_strata_weight = case_when(gender=="feminine" ~ 20/17,
-                                   gender=="masculine" ~ 80/66))
+  mutate(samp_strata_weight = case_when(gender=="feminine" ~ 40/17,
+                                   gender=="masculine" ~ 160/66))
 
 starwars_noNA <- starwars %>% filter(!is.na(gender))
 
